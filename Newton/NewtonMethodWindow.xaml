@@ -1,0 +1,408 @@
+﻿<Window x:Class="WpfApp1.NewtonMethodWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        mc:Ignorable="d"
+        Title="Newton • Optimization"
+        Height="1079" Width="1920"
+        WindowStartupLocation="CenterScreen"
+        Closing="Window_Closing"
+        Loaded="Window_Loaded"
+        FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <!-- Palette -->
+        <Color x:Key="C_Bg0">#0B1220</Color>
+        <Color x:Key="C_Bg1">#0F1A2E</Color>
+        <Color x:Key="C_Card">#121F39</Color>
+        <Color x:Key="C_Stroke">#233A66</Color>
+        <Color x:Key="C_Text1">#EAF0FF</Color>
+        <Color x:Key="C_Text2">#A9B6D3</Color>
+        <Color x:Key="C_Accent">#7C4DFF</Color>
+        <Color x:Key="C_Accent2">#00D4FF</Color>
+
+        <SolidColorBrush x:Key="Bg0" Color="{StaticResource C_Bg0}" />
+        <SolidColorBrush x:Key="Bg1" Color="{StaticResource C_Bg1}" />
+        <SolidColorBrush x:Key="Card" Color="{StaticResource C_Card}" />
+        <SolidColorBrush x:Key="Stroke" Color="{StaticResource C_Stroke}" />
+        <SolidColorBrush x:Key="Text1" Color="{StaticResource C_Text1}" />
+        <SolidColorBrush x:Key="Text2" Color="{StaticResource C_Text2}" />
+        <SolidColorBrush x:Key="Accent" Color="{StaticResource C_Accent}" />
+        <SolidColorBrush x:Key="Accent2" Color="{StaticResource C_Accent2}" />
+
+        <CornerRadius x:Key="R12">12</CornerRadius>
+
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+        </Style>
+
+        <!-- Cards -->
+        <Style x:Key="CardBorder" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource Card}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="{StaticResource R12}"/>
+            <Setter Property="Padding" Value="18"/>
+        </Style>
+
+        <!-- Field -->
+        <Style x:Key="FieldCaption" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Text2}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <Style x:Key="FieldBox" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource Bg1}"/>
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="CaretBrush" Value="{StaticResource Accent2}"/>
+        </Style>
+
+        <!-- Buttons -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+            <Setter Property="Background" Value="{StaticResource Accent}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="B"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{StaticResource R12}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="{StaticResource Accent2}" CornerRadius="12,0,0,12"/>
+                                <ContentPresenter Grid.Column="1"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="B" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect BlurRadius="18" ShadowDepth="0" Color="#5500D4FF"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="B" Property="Opacity" Value="0.88"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="B" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="GhostButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="B"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{StaticResource R12}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="B" Property="Background" Value="#1AFFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="B" Property="Background" Value="#12FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="B" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Menu -->
+        <Style TargetType="{x:Type Menu}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+        </Style>
+
+        <Style TargetType="{x:Type MenuItem}">
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+            <Setter Property="Padding" Value="10,6"/>
+        </Style>
+    </Window.Resources>
+
+    <Window.Background>
+        <RadialGradientBrush Center="0.2,0.1" GradientOrigin="0.2,0.1" RadiusX="1.1" RadiusY="1.0">
+            <GradientStop Color="#16264A" Offset="0"/>
+            <GradientStop Color="#0B1220" Offset="0.55"/>
+            <GradientStop Color="#070C16" Offset="1"/>
+        </RadialGradientBrush>
+    </Window.Background>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="320"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- LEFT: stacked sidebar -->
+        <Border Grid.Column="0"
+                Background="#0B1428"
+                BorderBrush="{StaticResource Stroke}"
+                BorderThickness="0,0,1,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="16">
+
+                    <StackPanel Margin="0,0,0,14">
+                        <TextBlock Text="Newton Method" FontSize="22" FontWeight="SemiBold"/>
+                        <TextBlock Text="Поиск минимума через f'(x) и f''(x)"
+                                   Foreground="{StaticResource Text2}" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                    <Border Style="{StaticResource CardBorder}" Padding="10" Margin="0,0,0,14">
+                        <Menu>
+                            <MenuItem Header="Файл">
+                                <MenuItem Header="Найти минимум" Click="Calculate_Click" Foreground="#FF08111F"/>
+                                <MenuItem Header="Пошаговый просмотр" Click="StepByStep_Click" Foreground="#FF08111F"/>
+                                <MenuItem Header="Очистить" Click="Clear_Click" Foreground="#FF08111F"/>
+                                <Separator/>
+                                <MenuItem Header="Справка по методу" Click="ShowHelp_Click" Foreground="#FF08111F"/>
+                                <Separator/>
+                                <MenuItem Header="Выход" Click="Exit_Click" Foreground="#FF08111F"/>
+                            </MenuItem>
+                            <MenuItem Header="Инструменты">
+                                <MenuItem Header="Автоподбор начальной точки" Click="AutoFindStartingPoint_Click" Foreground="#FF08111F"/>
+                            </MenuItem>
+                        </Menu>
+                    </Border>
+
+                    <Border Style="{StaticResource CardBorder}" Padding="14">
+                        <StackPanel>
+                            <TextBlock Text="Действия" Foreground="{StaticResource Text2}" Margin="0,0,0,10"/>
+                            <Button Name="btnAutoStart" Content="Автоподбор x0" Style="{StaticResource GhostButton}"
+                                    Click="AutoFindStartingPoint_Click" Margin="0,0,0,10"/>
+                            <Button Name="btnStepByStep" Content="Пошаговый просмотр" Style="{StaticResource GhostButton}"
+                                    Click="StepByStep_Click" Margin="0,0,0,10"/>
+                            <Button Name="btnCalculate" Content="Найти минимум" Style="{StaticResource PrimaryButton}"
+                                    Click="Calculate_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- RIGHT: main content -->
+        <Grid Grid.Column="1" Margin="18">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="16" Margin="0,0,0,14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel>
+                        <TextBlock Text="Метод Ньютона" FontSize="20" FontWeight="SemiBold"/>
+                        <TextBlock Text="Минимум: xₙ₊₁ = xₙ - f'(xₙ)/f''(xₙ)"
+                                   Foreground="{StaticResource Text2}" Margin="0,6,0,0"/>
+                    </StackPanel>
+
+                    <Border Grid.Column="1"
+                            Background="#1A00D4FF"
+                            BorderBrush="{StaticResource Accent2}"
+                            BorderThickness="1"
+                            CornerRadius="999"
+                            Padding="10,6"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="Optimization" />
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Inputs (no GroupBox, new layout) -->
+            <Border Grid.Row="1" Style="{StaticResource CardBorder}" Margin="0,0,0,14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="360"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                        <TextBlock Text="Функция f(x)" Style="{StaticResource FieldCaption}"/>
+                        <TextBox x:Name="txtFunction" Style="{StaticResource FieldBox}" Text="x^2"
+                                 ToolTip="Примеры: x^2, sin(x), exp(x)"/>
+
+                        <Grid Margin="0,14,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Начальная точка x0" Style="{StaticResource FieldCaption}"/>
+                                <TextBox x:Name="txtX0" Style="{StaticResource FieldBox}" Text="1"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Точность ε" Style="{StaticResource FieldCaption}"/>
+                                <TextBox x:Name="txtEpsilon" Style="{StaticResource FieldBox}" Text="0,001"
+                                         ToolTip="Пример: 0.001, 0.0001"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Margin="0,14,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Макс. итераций" Style="{StaticResource FieldCaption}"/>
+                                <TextBox x:Name="txtMaxIterations" Style="{StaticResource FieldBox}" Text="100"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                <TextBlock Text="График: a" Style="{StaticResource FieldCaption}"/>
+                                <TextBox x:Name="txtA" Style="{StaticResource FieldBox}" Text="-2"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="График: b" Style="{StaticResource FieldCaption}"/>
+                                <TextBox x:Name="txtB" Style="{StaticResource FieldBox}" Text="2"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Results mini card -->
+                    <Border Grid.Column="1"
+                            Background="#0DFFFFFF"
+                            BorderBrush="{StaticResource Stroke}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource R12}"
+                            Padding="14">
+                        <StackPanel>
+                            <TextBlock Text="Результаты" FontWeight="SemiBold" FontSize="14"/>
+
+                            <Grid Margin="0,12,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Статус" Foreground="{StaticResource Text2}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" x:Name="lblResult" Text="-" FontWeight="SemiBold"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Точка x" Foreground="{StaticResource Text2}" Margin="0,8,0,0"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="lblIterations" Text="-" Margin="0,8,0,0" FontWeight="SemiBold"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="f(x)" Foreground="{StaticResource Text2}" Margin="0,8,0,0"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" x:Name="lblFunctionValue" Text="-" Margin="0,8,0,0" FontWeight="SemiBold"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Производные" Foreground="{StaticResource Text2}" Margin="0,8,0,0"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" x:Name="lblDerivative" Text="-" Margin="0,8,0,0" FontWeight="SemiBold"/>
+                            </Grid>
+
+                            <TextBlock Text="xₙ₊₁ = xₙ - f'(xₙ)/f''(xₙ)"
+                                       Foreground="{StaticResource Text2}"
+                                       Margin="0,12,0,0"
+                                       FontSize="12"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Plot + step-by-step -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="420"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Plot -->
+                <Border Grid.Column="0" Style="{StaticResource CardBorder}" Padding="12" Margin="0,0,14,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <DockPanel Grid.Row="0" Margin="6,4,6,10">
+                            <TextBlock Text="График" FontWeight="SemiBold" FontSize="14" DockPanel.Dock="Left"/>
+                            <TextBlock Text="OxyPlot" Foreground="{StaticResource Text2}" DockPanel.Dock="Right"/>
+                        </DockPanel>
+
+                        <Border Grid.Row="1" Background="#08111F" BorderBrush="{StaticResource Stroke}" BorderThickness="1"
+                                CornerRadius="10" Padding="8">
+                            <oxy:PlotView x:Name="plotView" Model="{Binding PlotModel}"
+                                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Step-by-step -->
+                <Border Grid.Column="1" Style="{StaticResource CardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Пошаговый просмотр" FontSize="16" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="lblStepInfo" Text="Пошаговый просмотр:" Foreground="{StaticResource Text2}" Margin="0,6,0,12"/>
+
+                        <ListBox x:Name="lstSteps"
+                                 Height="220"
+                                 Background="{StaticResource Bg1}"
+                                 Foreground="{StaticResource Text1}"
+                                 BorderBrush="{StaticResource Stroke}"
+                                 BorderThickness="1"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0" HorizontalAlignment="Right">
+                            <Button x:Name="btnPrevStep" Content="Назад" Style="{StaticResource GhostButton}"
+                                    Width="110" Click="PrevStep_Click"/>
+                            <Button x:Name="btnNextStep" Content="Вперёд" Style="{StaticResource PrimaryButton}"
+                                    Width="120" Margin="10,0,0,0" Click="NextStep_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+        </Grid>
+    </Grid>
+</Window>

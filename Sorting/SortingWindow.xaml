@@ -1,0 +1,422 @@
+﻿<Window x:Class="WpfApp1.SortingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Sorting • Olympiad"
+        Height="1080"
+        Width="1920"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        MinHeight="900" MinWidth="1600"
+        FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <!-- Palette -->
+        <Color x:Key="C_Bg0">#0B1220</Color>
+        <Color x:Key="C_Bg1">#0F1A2E</Color>
+        <Color x:Key="C_Card">#121F39</Color>
+        <Color x:Key="C_Stroke">#233A66</Color>
+        <Color x:Key="C_Text1">#EAF0FF</Color>
+        <Color x:Key="C_Text2">#A9B6D3</Color>
+        <Color x:Key="C_Accent">#7C4DFF</Color>
+        <Color x:Key="C_Accent2">#00D4FF</Color>
+
+        <SolidColorBrush x:Key="Bg0" Color="{StaticResource C_Bg0}"/>
+        <SolidColorBrush x:Key="Bg1" Color="{StaticResource C_Bg1}"/>
+        <SolidColorBrush x:Key="Card" Color="{StaticResource C_Card}"/>
+        <SolidColorBrush x:Key="Stroke" Color="{StaticResource C_Stroke}"/>
+        <SolidColorBrush x:Key="Text1" Color="{StaticResource C_Text1}"/>
+        <SolidColorBrush x:Key="Text2" Color="{StaticResource C_Text2}"/>
+        <SolidColorBrush x:Key="Accent" Color="{StaticResource C_Accent}"/>
+        <SolidColorBrush x:Key="Accent2" Color="{StaticResource C_Accent2}"/>
+
+        <CornerRadius x:Key="R12">12</CornerRadius>
+
+        <!-- Global text -->
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+        </Style>
+
+        <!-- Cards -->
+        <Style x:Key="CardBorder" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource Card}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="{StaticResource R12}"/>
+            <Setter Property="Padding" Value="14"/>
+        </Style>
+
+        <Style x:Key="FieldCaption" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Text2}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <Style x:Key="FieldBox" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource Bg1}"/>
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="CaretBrush" Value="{StaticResource Accent2}"/>
+            <Setter Property="Height" Value="34"/>
+        </Style>
+
+        <Style x:Key="FieldCombo" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource Bg1}"/>
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Height" Value="34"/>
+        </Style>
+
+        <Style x:Key="DarkCheckBox" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <!-- Buttons -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+            <Setter Property="Background" Value="{StaticResource Accent}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="B"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{StaticResource R12}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="{StaticResource Accent2}" CornerRadius="12,0,0,12"/>
+                                <ContentPresenter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="B" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect BlurRadius="18" ShadowDepth="0" Color="#5500D4FF"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="B" Property="Opacity" Value="0.88"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="B" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="GhostButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="B"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{StaticResource R12}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="B" Property="Background" Value="#1AFFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="B" Property="Background" Value="#12FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="B" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource GhostButton}">
+            <Setter Property="BorderBrush" Value="#FF4D4D"/>
+            <Setter Property="Foreground" Value="#FFD6D6"/>
+        </Style>
+
+        <!-- Menu (dark) -->
+        <Style TargetType="{x:Type Menu}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+        </Style>
+
+        <Style TargetType="{x:Type MenuItem}">
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+            <Setter Property="Padding" Value="10,6"/>
+        </Style>
+
+        <Style TargetType="{x:Type Separator}">
+            <Setter Property="Margin" Value="8,6"/>
+            <Setter Property="Background" Value="{StaticResource Stroke}"/>
+        </Style>
+
+        <!-- DataGrid (dark) -->
+        <Style x:Key="DarkDataGrid" TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="True"/>
+            <Setter Property="CanUserAddRows" Value="True"/>
+            <Setter Property="CanUserDeleteRows" Value="True"/>
+            <Setter Property="Background" Value="#08111F"/>
+            <Setter Property="Foreground" Value="{StaticResource Text1}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RowBackground" Value="#0B162A"/>
+            <Setter Property="AlternatingRowBackground" Value="#08111F"/>
+            <Setter Property="GridLinesVisibility" Value="All"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#182B50"/>
+            <Setter Property="VerticalGridLinesBrush" Value="#182B50"/>
+            <Setter Property="HeadersVisibility" Value="All"/>
+            <Setter Property="ColumnHeaderHeight" Value="34"/>
+            <Setter Property="RowHeaderWidth" Value="46"/>
+        </Style>
+    </Window.Resources>
+
+    <Window.Background>
+        <RadialGradientBrush Center="0.2,0.1" GradientOrigin="0.2,0.1" RadiusX="1.1" RadiusY="1.0">
+            <GradientStop Color="#16264A" Offset="0"/>
+            <GradientStop Color="#0B1220" Offset="0.55"/>
+            <GradientStop Color="#070C16" Offset="1"/>
+        </RadialGradientBrush>
+    </Window.Background>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="340"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="380"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top menu bar -->
+        <Border Grid.Row="0" Grid.ColumnSpan="3" Background="#0B1428" BorderBrush="{StaticResource Stroke}" BorderThickness="0,0,0,1">
+            <DockPanel Margin="12,8">
+                <TextBlock Text="Sorting • Olympiad" FontWeight="SemiBold" FontSize="14" DockPanel.Dock="Left"/>
+                <Menu DockPanel.Dock="Right">
+                    <MenuItem Header="Файл">
+                        <MenuItem Header="Загрузить из файла (XLSX)" Foreground="#FF08111F" Click="LoadExcelFromMenu_Click"/>
+                        <MenuItem Header="Загрузить из Google Sheets" Foreground="#FF08111F" Click="LoadGoogleSheetsFromMenu_Click"/>
+                        <Separator/>
+                        <MenuItem Header="Сохранить результаты" Foreground="#FF08111F" Click="SaveResultsFromMenu_Click"/>
+                        <Separator/>
+                        <MenuItem Header="Выход" Foreground="#FF08111F" Click="ExitFromMenu_Click"/>
+                    </MenuItem>
+                    <MenuItem Header="Данные">
+                        <MenuItem Header="Сгенерировать данные" Foreground="#FF08111F" Click="GenerateDataFromMenu_Click"/>
+                        <MenuItem Header="Ввести вручную" Foreground="#FF08111F" Click="ManualInputFromMenu_Click"/>
+                        <MenuItem Header="Очистить данные" Foreground="#FF08111F" Click="ClearFromMenu_Click"/>
+                    </MenuItem>
+                    <MenuItem Header="Сортировка">
+                        <MenuItem Header="Выполнить сортировку" Foreground="#FF08111F" Click="SortFromMenu_Click" InputGestureText="F5"/>
+                        <Separator/>
+                        <MenuItem Header="Выбрать все алгоритмы" Foreground="#FF08111F" Click="SelectAllAlgorithmsFromMenu_Click"/>
+                        <MenuItem Header="Снять все выборы" Foreground="#FF08111F" Click="DeselectAllAlgorithmsFromMenu_Click"/>
+                    </MenuItem>
+                    <MenuItem Header="Вид">
+                        <MenuItem Header="Сбросить визуализацию" Foreground="#FF08111F" Click="ClearVisualizationFromMenu_Click"/>
+                        <Separator/>
+                        <MenuItem Header="О программе" Foreground="#FF08111F" Click="AboutFromMenu_Click"/>
+                        <MenuItem Header="Руководство" Foreground="#FF08111F" Click="HelpFromMenu_Click"/>
+                    </MenuItem>
+                </Menu>
+            </DockPanel>
+        </Border>
+
+        <!-- LEFT: controls -->
+        <Border Grid.Row="1" Grid.Column="0" Background="#0B1428" BorderBrush="{StaticResource Stroke}" BorderThickness="0,0,1,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="16">
+
+                    <StackPanel Margin="0,0,0,14">
+                        <TextBlock Text="Алгоритмы сортировки" FontSize="20" FontWeight="SemiBold"/>
+                        <TextBlock Text="Генерация • импорт • настройки • запуск"
+                                   Foreground="{StaticResource Text2}" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                    <!-- Generation card -->
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="Генерация данных" Foreground="{StaticResource Text2}" Margin="0,0,0,10"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="От" Style="{StaticResource FieldCaption}" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="txtMinValue" Text="1" Style="{StaticResource FieldBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="До" Style="{StaticResource FieldCaption}" Margin="0,0,0,4"/>
+                                    <TextBox x:Name="txtMaxValue" Text="100" Style="{StaticResource FieldBox}"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Количество элементов" Style="{StaticResource FieldCaption}" Margin="0,12,0,4"/>
+                            <TextBox x:Name="txtElementCount" Text="10" Style="{StaticResource FieldBox}"/>
+
+                            <Button Content="Сгенерировать данные" Click="GenerateData_Click" Style="{StaticResource GhostButton}" Margin="0,12,0,0"/>
+                            <Button Content="Очистить данные" Click="Clear_Click" Style="{StaticResource DangerButton}" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Import card -->
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="Импорт данных" Foreground="{StaticResource Text2}" Margin="0,0,0,10"/>
+                            <Button Content="Загрузить из файла (XLSX)" Click="LoadExcel_Click" Style="{StaticResource GhostButton}"/>
+                            <Button Content="Ввести вручную" Click="ManualInput_Click" Style="{StaticResource GhostButton}" Margin="0,10,0,0"/>
+                            <Button Content="Загрузить из Google Sheets" Click="LoadGoogleSheets_Click" Style="{StaticResource GhostButton}" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Algorithms card -->
+                    <Border Style="{StaticResource CardBorder}" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="Алгоритмы" Foreground="{StaticResource Text2}" Margin="0,0,0,10"/>
+                            <CheckBox x:Name="cbBubble" Content="Пузырьковая" Style="{StaticResource DarkCheckBox}"/>
+                            <CheckBox x:Name="cbInsertion" Content="Вставками" Style="{StaticResource DarkCheckBox}"/>
+                            <CheckBox x:Name="cbShaker" Content="Шейкерная" Style="{StaticResource DarkCheckBox}"/>
+                            <CheckBox x:Name="cbQuick" Content="Быстрая" Style="{StaticResource DarkCheckBox}"/>
+                            <CheckBox x:Name="cbBogo" Content="BOGO" Style="{StaticResource DarkCheckBox}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Settings card -->
+                    <Border Style="{StaticResource CardBorder}">
+                        <StackPanel>
+                            <TextBlock Text="Настройки" Foreground="{StaticResource Text2}" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="Порядок сортировки" Style="{StaticResource FieldCaption}"/>
+                            <ComboBox x:Name="comboOrder" Style="{StaticResource FieldCombo}" SelectedIndex="0">
+                                <ComboBoxItem Content="По возрастанию ↗" Foreground="#FF08111F"/>
+                                <ComboBoxItem Content="По убыванию ↘" Foreground="#FF08111F"/>
+                            </ComboBox>
+
+                            <TextBlock Text="Макс. итераций для BOGO" Style="{StaticResource FieldCaption}" Margin="0,12,0,4"/>
+                            <TextBox x:Name="txtMaxBogoIterations" Text="10000" Style="{StaticResource FieldBox}"/>
+                            <TextBlock Text="0 = без ограничений" FontSize="11" Foreground="{StaticResource Text2}" Margin="0,4,0,0"/>
+
+                            <Button Content="Выполнить сортировку (F5)"
+                                    Click="Sort_Click"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Margin="0,14,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- CENTER: input + visualization -->
+        <Grid Grid.Row="1" Grid.Column="1" Margin="18,16,18,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="240"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="12" Margin="0,0,0,14">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" Margin="6,4,6,10">
+                        <TextBlock Text="Входные данные" FontWeight="SemiBold" FontSize="14" DockPanel.Dock="Left"/>
+                        <TextBlock Text="DataGrid" Foreground="{StaticResource Text2}" DockPanel.Dock="Right"/>
+                    </DockPanel>
+
+                    <DataGrid x:Name="dataGrid"
+                              Grid.Row="1"
+                              Style="{StaticResource DarkDataGrid}"
+                              BeginningEdit="DataGrid_BeginningEdit"/>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Style="{StaticResource CardBorder}" Padding="12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" Margin="6,4,6,10">
+                        <TextBlock Text="Визуализация результатов" FontWeight="SemiBold" FontSize="14" DockPanel.Dock="Left"/>
+                        <TextBlock Text="Canvas" Foreground="{StaticResource Text2}" DockPanel.Dock="Right"/>
+                    </DockPanel>
+
+                    <Border Grid.Row="1" Background="#08111F" BorderBrush="{StaticResource Stroke}" BorderThickness="1" CornerRadius="10" Padding="8">
+                        <Canvas x:Name="visualizationCanvas" Background="Transparent"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- RIGHT: results -->
+        <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource CardBorder}" Margin="0,16,16,16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0" Margin="6,4,6,10">
+                    <TextBlock Text="Результаты" FontWeight="SemiBold" FontSize="14" DockPanel.Dock="Left"/>
+                    <TextBlock Text="Consolas" Foreground="{StaticResource Text2}" DockPanel.Dock="Right"/>
+                </DockPanel>
+
+                <TextBox x:Name="txtResults"
+                         Grid.Row="1"
+                         IsReadOnly="True"
+                         VerticalScrollBarVisibility="Auto"
+                         Background="{StaticResource Bg1}"
+                         Foreground="{StaticResource Text1}"
+                         BorderBrush="{StaticResource Stroke}"
+                         BorderThickness="1"
+                         FontFamily="Consolas"
+                         FontSize="12"
+                         TextWrapping="Wrap"
+                         Padding="10"/>
+            </Grid>
+        </Border>
+
+    </Grid>
+</Window>
