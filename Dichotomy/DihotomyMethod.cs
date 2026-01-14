@@ -1,7 +1,5 @@
 ﻿using System;
 using NCalc;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace WpfApp1
@@ -15,10 +13,8 @@ namespace WpfApp1
         {
             string processedFunction = ProcessFunctionForNCalc(function.ToLower());
             _expression = new Expression(processedFunction, EvaluateOptions.IgnoreCase);
-
             _expression.Parameters["pi"] = Math.PI;
             _expression.Parameters["e"] = Math.E;
-
             _expression.EvaluateFunction += EvaluateFunction;
             _expression.EvaluateParameter += EvaluateParameter;
         }
@@ -26,9 +22,7 @@ namespace WpfApp1
         private string ProcessFunctionForNCalc(string function)
         {
             string result = function;
-
             result = ConvertPowerOperator(result);
-
             return result;
         }
 
@@ -40,8 +34,7 @@ namespace WpfApp1
 
             while (iteration < maxIterations)
             {
-                Match match = Regex.Match(result, @"([a-zA-Z0-9\.\(\)]+)\s*\^\s*([a-zA-Z0-9\.\(\)]+)");
-
+                Match match = Regex.Match(result, @"([a-zA-Z0-9\.\)\$]+)\s*\^\s*([a-zA-Z0-9\.\(\$]+)");
                 if (!match.Success)
                     break;
 
@@ -62,7 +55,6 @@ namespace WpfApp1
                 result = result.Replace(match.Value, replacement);
                 iteration++;
             }
-
             return result;
         }
 
@@ -106,40 +98,25 @@ namespace WpfApp1
                     break;
                 case "log":
                     if (args.Parameters.Length == 1)
-                    {
                         args.Result = Math.Log(Convert.ToDouble(args.Parameters[0].Evaluate()));
-                    }
                     else if (args.Parameters.Length == 2)
-                    {
-                        args.Result = Math.Log(Convert.ToDouble(args.Parameters[0].Evaluate()),
-                                             Convert.ToDouble(args.Parameters[1].Evaluate()));
-                    }
+                        args.Result = Math.Log(Convert.ToDouble(args.Parameters[0].Evaluate()), Convert.ToDouble(args.Parameters[1].Evaluate()));
                     else
-                    {
                         throw new ArgumentException("Функция log требует 1 или 2 аргумента");
-                    }
                     break;
                 case "log10":
                     if (args.Parameters.Length == 1)
-                    {
                         args.Result = Math.Log10(Convert.ToDouble(args.Parameters[0].Evaluate()));
-                    }
                     else
-                    {
                         throw new ArgumentException("Функция log10 требует 1 аргумент");
-                    }
                     break;
                 case "pow":
                     if (args.Parameters.Length == 2)
-                    {
                         args.Result = Math.Pow(
                             Convert.ToDouble(args.Parameters[0].Evaluate()),
                             Convert.ToDouble(args.Parameters[1].Evaluate()));
-                    }
                     else
-                    {
                         throw new ArgumentException("Функция pow требует 2 аргумента");
-                    }
                     break;
                 default:
                     throw new ArgumentException($"Неизвестная функция: {name}");
@@ -164,7 +141,6 @@ namespace WpfApp1
                     {
                         return double.MaxValue;
                     }
-
                     return doubleResult;
                 }
 
@@ -210,64 +186,37 @@ namespace WpfApp1
             }
         }
 
-        public bool HasSameSignOnEnds(double a, double b)
+        public bool HasSignChangeOnEnds(double a, double b)
         {
-            try
-            {
-                double fa = CalculateFunction(a);
-                double fb = CalculateFunction(b);
-
-                return Math.Sign(fa) == Math.Sign(fb) && Math.Abs(fa) > 1e-15 && Math.Abs(fb) > 1e-15;
-            }
-            catch
-            {
-                return false;
-            }
+            double fa = CalculateFunction(a);
+            double fb = CalculateFunction(b);
+            return Math.Sign(fa) != Math.Sign(fb);
         }
 
         public double FindSingleRoot(double a, double b, double epsilon)
         {
-            if (a >= b)
-            {
-                throw new ArgumentException("Интервал [a, b] задан неверно");
-            }
-
-            if (epsilon <= 0)
-            {
-                throw new ArgumentException("Точность epsilon должна быть положительной");
-            }
-
-            if (HasSameSignOnEnds(a, b))
-            {
-                throw new InvalidOperationException($"Функция имеет одинаковый знак на концах интервала [{a}, {b}]. " +
-                                                  "Метод дихотомии не может найти корень на этом интервале.");
-            }
-
-            IterationsCount = 0;
-
-            return FindSingleRootInternal(a, b, epsilon);
-        }
-
-        private double FindSingleRootInternal(double a, double b, double epsilon)
-        {
             double fa = CalculateFunction(a);
             double fb = CalculateFunction(b);
 
-            if (Math.Abs(fa) < epsilon)
-            {
-                return a;
-            }
+            if (a >= b)
+                throw new ArgumentException("Интервал [a, b] задан неверно");
+            if (epsilon <= 0)
+                throw new ArgumentException("Точность epsilon должна быть положительной");
 
-            if (Math.Abs(fb) < epsilon)
-            {
-                return b;
-            }
+            if (double.IsNaN(fa) || double.IsInfinity(fa) || Math.Abs(fa) > 1e8)
+                throw new InvalidOperationException($"В левой границе интервала x={a} функция стремится к бесконечности или разрывается: f(a)={fa}");
+            if (double.IsNaN(fb) || double.IsInfinity(fb) || Math.Abs(fb) > 1e8)
+                throw new InvalidOperationException($"В правой границе интервала x={b} функция стремится к бесконечности или разрывается: f(b)={fb}");
 
-            if (fa * fb >= 0)
-            {
-                throw new ArgumentException("На интервале нет смены знака");
-            }
+            if (Math.Sign(fa) == Math.Sign(fb) && Math.Abs(fa) > 1e-15 && Math.Abs(fb) > 1e-15)
+                throw new InvalidOperationException($"Функция имеет одинаковый знак на концах интервала [{a}, {b}]. Метод дихотомии не может найти корень на этом интервале.");
 
+            IterationsCount = 0;
+            return FindSingleRootInternal(a, b, epsilon, fa, fb);
+        }
+
+        private double FindSingleRootInternal(double a, double b, double epsilon, double fa, double fb)
+        {
             while (Math.Abs(b - a) > epsilon)
             {
                 double mid = (a + b) / 2;
@@ -275,10 +224,11 @@ namespace WpfApp1
 
                 IterationsCount++;
 
+                if (double.IsNaN(fmid) || double.IsInfinity(fmid) || Math.Abs(fmid) > 1e8)
+                    throw new InvalidOperationException($"В точке x={mid} функция стремится к бесконечности или разрывается: f({mid})={fmid}");
+
                 if (Math.Abs(fmid) < epsilon)
-                {
                     return mid;
-                }
 
                 if (fa * fmid < 0)
                 {
@@ -292,25 +242,27 @@ namespace WpfApp1
                 }
 
                 if (IterationsCount > 1000)
-                {
-                    break;
-                }
+                    throw new InvalidOperationException("Превышено максимальное количество итераций.");
             }
 
-            return (a + b) / 2;
+            double midFinal = (a + b) / 2.0;
+            double fmidFinal = CalculateFunction(midFinal);
+
+            if (double.IsNaN(fmidFinal) || double.IsInfinity(fmidFinal) || Math.Abs(fmidFinal) > 1e8)
+                throw new InvalidOperationException($"Вблизи предполагаемого корня функция разрывается или стремится к бесконечности (f({midFinal})={fmidFinal}). Метод дихотомии не применим: корень отсутствует или есть разрыв!");
+
+            return midFinal;
         }
+
 
         public bool IsConstantFunction(double a, double b)
         {
             double[] testPoints = { a, (a + b) / 2, b, a + (b - a) / 4, a + 3 * (b - a) / 4 };
             double firstValue = CalculateFunction(testPoints[0]);
-
             foreach (double point in testPoints)
             {
                 if (Math.Abs(CalculateFunction(point) - firstValue) > 1e-15)
-                {
                     return false;
-                }
             }
             return true;
         }
