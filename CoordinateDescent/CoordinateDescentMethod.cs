@@ -61,16 +61,12 @@ namespace WpfApp1
             {
                 string rightPart = ExtractRightPart(input, caretIndex + 1);
                 string leftPart = ExtractLeftPart(input, caretIndex - 1);
-
-                string powExpression = $"pow({leftPart},{rightPart})";
-
+                string powExpression = $"(pow({leftPart},{rightPart}))";
                 int leftStart = caretIndex - leftPart.Length;
                 int rightEnd = caretIndex + 1 + rightPart.Length;
-
                 input = input.Substring(0, leftStart) + powExpression +
                         (rightEnd < input.Length ? input.Substring(rightEnd) : "");
             }
-
             return input;
         }
 

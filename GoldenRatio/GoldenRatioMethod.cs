@@ -37,6 +37,9 @@ namespace WpfApp1
 
             result = result.Replace(",", ".");
 
+            // Новый блок: обработка унарного минуса перед скобкой
+            result = Regex.Replace(result, @"\-\(", "-1*(");
+
             result = SimpleExponentialConversion(result);
 
             result = SimpleMultiplication(result);
@@ -183,16 +186,29 @@ namespace WpfApp1
                         args.Result = Math.Cos(Convert.ToDouble(args.Parameters[0].Evaluate()));
                         break;
                     case "tan":
-                        args.Result = Math.Tan(Convert.ToDouble(args.Parameters[0].Evaluate()));
+                        {
+                            double value = Convert.ToDouble(args.Parameters[0].Evaluate());
+                            double cosVal = Math.Cos(value);
+                            if (Math.Abs(cosVal) < 1e-12) throw new ArgumentException("Тангенс не определён (деление на ноль)");
+                            args.Result = Math.Tan(value);
+                        }
                         break;
                     case "atan":
                         args.Result = Math.Atan(Convert.ToDouble(args.Parameters[0].Evaluate()));
                         break;
                     case "exp":
-                        args.Result = Math.Exp(Convert.ToDouble(args.Parameters[0].Evaluate()));
+                        {
+                            double val = Convert.ToDouble(args.Parameters[0].Evaluate());
+                            if (val > 700) throw new ArgumentException("Аргумент слишком большой для exp(x)");
+                            args.Result = Math.Exp(val);
+                        }
                         break;
                     case "sqrt":
-                        args.Result = Math.Sqrt(Convert.ToDouble(args.Parameters[0].Evaluate()));
+                        {
+                            double v = Convert.ToDouble(args.Parameters[0].Evaluate());
+                            if (v < 0) throw new ArgumentException("Квадратный корень из отрицательного аргумента");
+                            args.Result = Math.Sqrt(v);
+                        }
                         break;
                     case "abs":
                         args.Result = Math.Abs(Convert.ToDouble(args.Parameters[0].Evaluate()));
@@ -200,12 +216,17 @@ namespace WpfApp1
                     case "log":
                         if (args.Parameters.Length == 1)
                         {
-                            args.Result = Math.Log(Convert.ToDouble(args.Parameters[0].Evaluate()));
+                            double v = Convert.ToDouble(args.Parameters[0].Evaluate());
+                            if (v <= 0) throw new ArgumentException("Логарифм не определён для неположительных значений");
+                            args.Result = Math.Log(v);
                         }
                         else if (args.Parameters.Length == 2)
                         {
-                            args.Result = Math.Log(Convert.ToDouble(args.Parameters[0].Evaluate()),
-                                                 Convert.ToDouble(args.Parameters[1].Evaluate()));
+                            double value = Convert.ToDouble(args.Parameters[0].Evaluate());
+                            double logBase = Convert.ToDouble(args.Parameters[1].Evaluate());
+                            if (value <= 0 || logBase <= 0 || logBase == 1)
+                                throw new ArgumentException("Логарифм не определён для таких аргументов");
+                            args.Result = Math.Log(value, logBase);
                         }
                         else
                         {
@@ -215,7 +236,9 @@ namespace WpfApp1
                     case "log10":
                         if (args.Parameters.Length == 1)
                         {
-                            args.Result = Math.Log10(Convert.ToDouble(args.Parameters[0].Evaluate()));
+                            double v = Convert.ToDouble(args.Parameters[0].Evaluate());
+                            if (v <= 0) throw new ArgumentException("Логарифм не определён для неположительных значений");
+                            args.Result = Math.Log10(v);
                         }
                         else
                         {
@@ -227,10 +250,12 @@ namespace WpfApp1
                         {
                             double baseVal = Convert.ToDouble(args.Parameters[0].Evaluate());
                             double exponent = Convert.ToDouble(args.Parameters[1].Evaluate());
-
+                            // 0^что-то-отрицательное — ошибка
                             if (Math.Abs(baseVal) < 1e-15 && exponent < 0)
-                                throw new ArgumentException("Деление на ноль");
-
+                                throw new ArgumentException("Деление на ноль в pow");
+                            // Отрицательное основание и дробная степень: бросить ошибку
+                            if (baseVal < 0 && Math.Abs(exponent % 1) > 1e-15)
+                                throw new ArgumentException("Отрицательное основание и дробная степень");
                             args.Result = Math.Pow(baseVal, exponent);
                         }
                         else
@@ -252,39 +277,41 @@ namespace WpfApp1
         {
             try
             {
-                if (Math.Abs(x) > 1e10)
-                {
-                    return x > 0 ? double.MaxValue / 1000 : double.MinValue / 1000;
-                }
+                if (double.IsNaN(x) || double.IsInfinity(x))
+                    throw new ArgumentException($"Некорректное значение x: {x}");
+
+                // Проверка опасных значений x для выражения "1/(x-2)" и подобных:
+                if (Math.Abs(x - 2) < 1e-8)
+                    throw new ArgumentException("Попытка деления на очень маленькое число (x слишком близко к 2)");
 
                 _expression.Parameters["x"] = x;
                 var result = _expression.Evaluate();
 
-                if (result is double doubleResult)
-                {
-                    if (double.IsInfinity(doubleResult) || double.IsNaN(doubleResult))
-                    {
-                        return double.MaxValue / 1000;
-                    }
-                    return doubleResult;
-                }
+                double val = Convert.ToDouble(result);
 
-                if (result is int intResult)
-                {
-                    return intResult;
-                }
+                // Проверка результата на адекватность
+                if (double.IsNaN(val) || double.IsInfinity(val) || Math.Abs(val) > 1e12)
+                    throw new ArgumentException("Результат функции неадекватен (NaN, Infinity или слишком большой по модулю)");
 
-                if (result is decimal decimalResult)
-                {
-                    return (double)decimalResult;
-                }
-
-                return Convert.ToDouble(result);
+                return val;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка в CalculateFunction(x={x}): {ex.Message}");
                 throw new ArgumentException($"Ошибка вычисления функции: {ex.Message}");
+            }
+        }
+
+        public void ValidateFunctionSyntax()
+        {
+            try
+            {
+                _expression.Parameters["x"] = 0.5;
+                var val = _expression.Evaluate();
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException("В функции пользователя синтаксическая или вычислительная ошибка: " + ex.Message);
             }
         }
 
