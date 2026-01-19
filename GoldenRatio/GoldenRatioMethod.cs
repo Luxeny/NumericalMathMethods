@@ -280,16 +280,11 @@ namespace WpfApp1
                 if (double.IsNaN(x) || double.IsInfinity(x))
                     throw new ArgumentException($"Некорректное значение x: {x}");
 
-                // Проверка опасных значений x для выражения "1/(x-2)" и подобных:
-                if (Math.Abs(x - 2) < 1e-8)
-                    throw new ArgumentException("Попытка деления на очень маленькое число (x слишком близко к 2)");
-
                 _expression.Parameters["x"] = x;
                 var result = _expression.Evaluate();
 
                 double val = Convert.ToDouble(result);
 
-                // Проверка результата на адекватность
                 if (double.IsNaN(val) || double.IsInfinity(val) || Math.Abs(val) > 1e12)
                     throw new ArgumentException("Результат функции неадекватен (NaN, Infinity или слишком большой по модулю)");
 

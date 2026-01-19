@@ -1034,6 +1034,11 @@ namespace WpfApp1
             PlotModel.InvalidatePlot(true);
         }
 
+        private void txtN_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
+
         private void HistoryN_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (cmbHistoryN.SelectedIndex >= 0 && _lastResults != null && _lastResults.Count > 0)
